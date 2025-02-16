@@ -1,0 +1,25 @@
+void parse_input(char *buffer, char **args)
+{
+    int i = 0;
+
+    char *fake_buffer = buffer; // inputun başlangıcına işaret ettik
+    char *temp_ptr;
+
+    args[0] = fake_buffer; // "ls -l /home"
+    i++;
+
+    temp_ptr = strstr(buffer, " ");
+    while (temp_ptr != NULL)
+    {
+        *temp_ptr = '\0'; // boslugu null ile degistirdik.
+        //"ls\0-l /home"
+        fake_buffer = temp_ptr + 1; // bir sonraki kelimeye gectik.
+
+        while (*fake_buffer == '\0')
+            fake_buffer++;           // diğer boslukları gectik ikk bosluktan sonrakileri mesela varsa eger.stringe gelince durur zaten
+        if (*fake_buffer != '\0')    // iste stringe gelince null olmaycagi icin tokenlarımıza yenisini eklemis olduk.
+            args[i++] = fake_buffer; // args[1] = -l /home baslangicini aldi. i 2 oldu.
+                                     // bu sekilde tokenlarımızı almıs olucaz.
+    }
+    args[i] = NULL;
+}

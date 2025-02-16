@@ -8,3 +8,16 @@ FORK SONRASI:
 - PID: 1234                   - PID: 1235
 - Çalışıyor: shell           - Çalışıyor: shell'in kopyası
 - fork() → 1235 döndürür     - fork() → 0 döndürür
+
+
+
+
+Program başlar
+    |
+    |- fork() çağrılır
+    |
+    |-- Parent Process (pid > 0)         -- Child Process (pid = 0)
+    |   |                                   |
+    |   |- "Ben parent'ım"                  |- "Ben child'ım"
+    |   |- wait() ile child'ı bekle         |- Child işini yapar
+    |   |- Parent devam eder                |- Child biter

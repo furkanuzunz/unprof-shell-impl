@@ -1,0 +1,26 @@
+process_command(char **args):
+
+1. SYSTEM INFO KOMUTLARI (built-in, sistem bilgisi verenler):
+   - ">>" -> print_system_info()
+      * Tarih
+      * Kullanıcı adı
+      * vs.
+
+2. SHELL BUILT-IN KOMUTLARI:
+   - "cd" -> handle_cd()
+   - "echo" -> handle_echo()
+   - "exit" -> handle_exit()
+
+3. HARİCİ KOMUTLAR:
+   - "ls", "cat" vb -> external_command()
+      * fork()
+      * execvp()
+      * wait()
+
+Yani process_command():
+   if (args[0] == ">>")
+      return handle_system_info();
+   else if (is_builtin_command(args[0]))  // cd, echo, exit
+      return handle_builtin_command(args);
+   else
+      return external_command(args);  // ls, cat vs.
