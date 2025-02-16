@@ -46,6 +46,25 @@ void parse_input(char *buffer, char **args)
     }
     args[i] = NULL;
 }
+process_command(char **args);
+
+void execute_external_command(char **args) // ls , cat, vs
+{
+    pid_t pid = fork();
+    if(pid < 0 )
+        perror("fork hatasi");
+    else if(pid == 0)
+    {
+        // child process basladi.komutu calistircaz simdi
+        execvp(args[0],args);
+    }
+    else if(pid > 0)
+    {
+        // parent proccess kısmı 
+    }
+}
+
+
 
 int main()
 {
@@ -63,11 +82,13 @@ int main()
         }
         parse_input(buffer, args);
         i = 0;
-        while (args[i] != NULL)
-        {
-            printf("args[%d]: %s\n", i, args[i]);
-            i++;
-        }
+        // while (args[i] != NULL)
+        // {
+        //     printf("args[%d]: %s\n", i, args[i]);
+        //     i++;
+        // }
+        if(args[0] != NULL)
+            execute_command(args);
     }
 
     return 0;

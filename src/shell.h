@@ -11,6 +11,8 @@
 
 void parse_input(char *buffer, char **args);
 int take_input(char *buffer);
+void execute_command(char **args);
+process_command(char **args);
 
 
 
