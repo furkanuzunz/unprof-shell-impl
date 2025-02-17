@@ -27,3 +27,16 @@ bool has_output_redirect(char **args)
     }
     return false;
 }
+bool has_pipe(char **args)
+{
+    int i = 0;
+    while(args[i] != NULL)
+    {
+        if(strcmp(args[i],"|") == 0)
+        {
+            return true;
+        }
+        i++;
+    }
+    return false;
+}

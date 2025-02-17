@@ -21,12 +21,14 @@ int take_input(char *buffer)
     return 1;
 }
 
+// eski kendi yazdigim parse_input fonksiyonum segmentasyon fault yedi. ai strok kullanmamın daha guvenli olacagınıs öyledi.sebeplerini öğrendim.eski fonksiyonum explanis.txt kisminda
+
 void parse_input(char *buffer, char **args)
 {
     int i = 0;
     char *token;
     
-    // strtok kullanarak boşluklara göre ayır
+    // strtok kullanarak boşluklara göre tokenlarimizi alalim.
     token = strtok(buffer, " \t\n");
     while (token != NULL && i < MAX_INPUT_SIZE / 2)
     {
@@ -34,7 +36,7 @@ void parse_input(char *buffer, char **args)
         i++;
         token = strtok(NULL, " \t\n");
     }
-    args[i] = NULL;  // Son eleman NULL olmalı
+    args[i] = NULL;  // Son eleman NULL yapalım.
 }
 
 void execute_external_command(char **args) // ls , cat, vs
@@ -139,6 +141,87 @@ void execute_output_redirect(char **args)
         }
     }
 }
+
+void execute_pipe_command(char **args)
+{
+    pid_t pid1,pid2;
+    char **second_cmd;
+    int pipe_found = 0;
+
+    int i = 0;
+    while(args[i] != NULL)
+    {
+        if(strcmp(args[i],"|") == 0)
+        {
+            args[i] = '\0';
+            second_cmd = &args[i + 1];
+            pipe_found = 1;
+            break;
+        }
+        i++;
+    }
+    if(!pipe_found || second_cmd[0] == NULL)
+    {
+        printf("pipe komutu hatasi \ eksik arguman");
+        return;
+    }
+
+    int pipearr[2];
+    if(pipe(pipearr) < 0)
+    {
+        perror("pipe olusturulamadi");
+        exit(EXIT_FAILURE);
+    }
+    pid1 = fork();
+    if(pid1 < 0)
+    {
+        perror("fork1 hatasi");
+        exit(EXIT_FAILURE);
+    }
+    else if(pid1 == 0)
+    {
+        close(pipearr[0]); // okuma ucunu kapadik.burda yazma kullaniaz cunku
+        dup2(pipearr[1],STDOUT_FILENO);
+        close(pipearr[1]);
+        
+        
+        if(execvp(args[0],args) < 0)
+        {
+            perror("ilk komut calistirilamadi");
+            exit(EXIT_FAILURE);
+        }
+    
+    
+    }
+    else if(pid1 > 0)
+    {
+        pid2 = fork();
+        if(pid2 < 0)
+        {
+            perror("fork2 hatasi");
+            exit(EXIT_FAILURE);
+        }
+        else if(pid2 == 0)
+        {
+            close(pipearr[1]);
+            dup2(pipearr[0],STDIN_FILENO);
+            close(pipearr[0]);
+            if(execvp(second_cmd[0],second_cmd) < 0)
+            {
+                perror("ikinci komut calistirilamadi");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(pid2 > 0)
+        {
+            close(pipearr[0]);
+            close(pipearr[1]);
+            waitpid(pid1,NULL,0);
+            waitpid(pid2,NULL,0);
+
+        }
+    }
+}
 int main()
 {
     char buffer[MAX_INPUT_SIZE];
@@ -160,6 +243,8 @@ int main()
             {
                 execute_output_redirect(args);
             }
+            else if(has_pipe(args))
+                execute_pipe_command(args);
             else
                 execute_external_command(args);
         }
